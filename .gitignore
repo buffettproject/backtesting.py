@@ -21,3 +21,5 @@ doc/build/*
 *~*
 
 .venv/
+
+backtesting/test/BTCUSDT.csv
