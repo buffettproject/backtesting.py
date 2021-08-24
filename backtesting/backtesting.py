@@ -747,7 +747,7 @@ class _Broker:
         Long/short `price`, adjusted for commisions.
         In long positions, the adjusted price is a fraction higher, and vice versa.
         """
-        return (price or self.last_price) * (1 + copysign(self._commission, size))
+        return (price or self.last_price) * (1 + self._commission * np.sign(size))
 
     @property
     def equity(self) -> float:
