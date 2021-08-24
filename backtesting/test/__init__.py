@@ -35,3 +35,11 @@ def RSI(array, n):
     loss[loss > 0] = 0
     rs = gain.ewm(n).mean() / loss.abs().ewm(n).mean()
     return 100 - 100 / (1 + rs)
+
+
+def MAX(arr: pd.Series, n: int) -> pd.Series:
+    return pd.Series(arr).rolling(n).max()
+
+
+def MIN(arr: pd.Series, n: int) -> pd.Series:
+    return pd.Series(arr).rolling(n).min()
