@@ -24,3 +24,6 @@ doc/build/*
 
 backtesting/test/BTCUSDT.csv
 backtesting/test/BTCUSDT_1H.csv
+backtesting/test/ETHUSDT.csv
+
+**/.DS_Store
