@@ -49,3 +49,11 @@ def MAX(arr: pd.Series, n: int) -> pd.Series:
 
 def MIN(arr: pd.Series, n: int) -> pd.Series:
     return pd.Series(arr).rolling(n).min()
+
+
+def IS_LOCAL_MAX(arr: pd.Series, n: int) -> pd.Series:
+    return pd.Series(arr).rooling(2*n+1).max().shift(-n) == pd.Series(arr).rolling(1).max()
+
+
+def IS_LOCAL_MIN(arr: pd.Series, n: int) -> pd.Series:
+    return pd.Series(arr).rooling(2*n+1).min().shift(-n) == pd.Series(arr).rolling(1).min()
