@@ -25,10 +25,13 @@ from bokeh.models import (
     HoverTool,
     Range1d,
     DatetimeTickFormatter,
-    FuncTickFormatter,
     WheelZoomTool,
     LinearColorMapper,
 )
+try:
+    from bokeh.models import CustomJSTickFormatter
+except ImportError:  # Bokeh < 3.0
+    from bokeh.models import FuncTickFormatter as CustomJSTickFormatter
 from bokeh.io import output_notebook, output_file, show
 from bokeh.io.state import curstate
 from bokeh.layouts import gridplot
@@ -138,10 +141,10 @@ def _maybe_resample_data(resample_rule, df, indicators, equity_data, trades):
         return ((df['Size'].abs() * df['ReturnPct']) / df['Size'].abs().sum()).sum()
 
     def _group_trades(column):
-        def f(s, new_index=df.index.astype(np.int64), bars=trades[column]):
+        def f(s, new_index=pd.Index(df.index.view(int)), bars=trades[column]):
             if s.size:
                 # Via int64 because on pandas recently broken datetime
-                mean_time = int(bars.loc[s.index].view('i8').mean())
+                mean_time = int(bars.loc[s.index].view(int).mean())
                 new_bar_idx = new_index.get_loc(mean_time, method='nearest')
                 return new_bar_idx
         return f
@@ -209,8 +212,8 @@ def plot(*, results: pd.Series,
     new_bokeh_figure = partial(
         _figure,
         x_axis_type='linear',
-        plot_width=plot_width,
-        plot_height=400,
+        width=plot_width,
+        height=400,
         tools="xpan,xwheel_zoom,box_zoom,undo,redo,reset,save",
         active_drag='xpan',
         active_scroll='xwheel_zoom')
@@ -242,7 +245,7 @@ def plot(*, results: pd.Series,
     trades_cmap = factor_cmap('returns_positive', colors_darker, ['0', '1'])
 
     if is_datetime_index:
-        fig_ohlc.xaxis.formatter = FuncTickFormatter(
+        fig_ohlc.xaxis.formatter = CustomJSTickFormatter(
             args=dict(axis=fig_ohlc.xaxis[0],
                       formatter=DatetimeTickFormatter(days=['%d %b', '%a %d'],
                                                       months=['%m/%Y', "%b'%y"]),
@@ -266,7 +269,7 @@ return this.labels[index] || "";
         ('Volume', '@Volume{0,0}')]
 
     def new_indicator_figure(**kwargs):
-        kwargs.setdefault('plot_height', 90)
+        kwargs.setdefault('height', 90)
         fig = new_bokeh_figure(x_range=fig_ohlc.x_range,
                                active_scroll='xwheel_zoom',
                                active_drag='xpan',
@@ -331,7 +334,7 @@ return this.labels[index] || "";
         source.add(equity, source_key)
         fig = new_indicator_figure(
             y_axis_label=yaxis_label,
-            **({} if plot_drawdown else dict(plot_height=110)))
+            **({} if plot_drawdown else dict(height=110)))
 
         # High-watermark drawdown dents
         fig.patch('index', 'equity_dd',
@@ -694,8 +697,8 @@ def plot_heatmaps(heatmap: pd.Series, agg: Union[Callable, str], ncols: int,
                       y_range=level2,
                       x_axis_label=name1,
                       y_axis_label=name2,
-                      plot_width=plot_width // ncols,
-                      plot_height=plot_width // ncols,
+                      width=plot_width // ncols,
+                      height=plot_width // ncols,
                       tools='box_zoom,reset,save',
                       tooltips=[(name1, '@' + name1),
                                 (name2, '@' + name2),

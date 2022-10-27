@@ -10,11 +10,7 @@ Backtesting.py
 
 Backtest trading strategies with Python.
 
-[**Project website**](https://kernc.github.io/backtesting.py)
-
-[Documentation]
-
-[![Star](https://i.imgur.com/LSI6p6O.png)](#top) the project if you use it.
+[**Project website**](https://kernc.github.io/backtesting.py) + [Documentation]
 
 [Documentation]: https://kernc.github.io/backtesting.py/doc/backtesting/
 
@@ -92,6 +88,7 @@ dtype: object
 
 Find more usage examples in the [documentation].
 
+
 Features
 --------
 * Simple, well-documented API
@@ -102,6 +99,9 @@ Features
 * Supports _any_ financial instrument with candlestick data
 * Detailed results
 * Interactive visualizations
+
+![xkcd.com/1570](https://imgs.xkcd.com/comics/engineer_syllogism.png)
+
 
 Alternatives
 ------------
