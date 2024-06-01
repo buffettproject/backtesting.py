@@ -46,11 +46,11 @@ if __name__ == '__main__':
             'test': [
                 'seaborn',
                 'matplotlib',
-                'scikit-learn',
+                'scikit-learn <= 1.1.3',  # Pinned due to boken scikit-optimize
                 'scikit-optimize',
             ],
             'dev': [
-                'flake8',
+                'ruff==0.0.160',
                 'coverage',
                 'mypy',
             ],
@@ -61,6 +61,7 @@ if __name__ == '__main__':
         classifiers=[
             'Intended Audience :: Financial and Insurance Industry',
             'Intended Audience :: Science/Research',
+            'Framework :: Jupyter',
             'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3 :: Only',
@@ -120,6 +121,7 @@ if __name__ == '__main__':
             'quantitative',
             'rsi',
             'silver',
+            'simulation',
             'stocks',
             'strategy',
             'ticker',
