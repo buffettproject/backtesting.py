@@ -26,6 +26,12 @@ BTCUSDT = _read_file("BTCUSDT.csv")
 ETHUSDT = _read_file("ETHUSDT.csv")
 """DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
 
+ETHUSDT_1MIN = _read_file("ETHUSDT-1m.csv")
+"""DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+
+SOLUSDT = _read_file("SOLUSDT.csv")
+"""DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+
 
 def SMA(arr: pd.Series, n: int) -> pd.Series:
     """
