@@ -10,7 +10,6 @@ def _read_file(filename):
         join(dirname(__file__), filename),
         index_col=0,
         parse_dates=True,
-        infer_datetime_format=True,
     )
 
 

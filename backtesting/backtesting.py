@@ -1095,7 +1095,7 @@ class Backtest:
             (data.index.is_numeric() and
              (data.index > pd.Timestamp('1975').timestamp()).mean() > .8)):
             try:
-                data.index = pd.to_datetime(data.index, infer_datetime_format=True)
+                data.index = pd.to_datetime(data.index)
             except ValueError:
                 pass
 
