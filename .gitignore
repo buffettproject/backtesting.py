@@ -22,9 +22,8 @@ doc/build/*
 
 .venv/
 
-backtesting/test/BTCUSDT.csv
-backtesting/test/ETHUSDT.csv
-backtesting/test/SOLUSDT.csv
-backtesting/test/ETHUSDT-1m.csv
+backtesting/test/BTCUSDT-*.csv
+backtesting/test/ETHUSDT-*.csv
+backtesting/test/SOLUSDT-*.csv
 
 **/.DS_Store

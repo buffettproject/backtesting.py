@@ -19,17 +19,23 @@ GOOG = _read_file("GOOG.csv")
 EURUSD = _read_file("EURUSD.csv")
 """DataFrame of hourly EUR/USD forex data from April 2017 to February 2018."""
 
-BTCUSDT = _read_file("BTCUSDT.csv")
-"""DataFrame of minutely spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+BTCUSDT_1m = _read_file("BTCUSDT-1m.csv")
+"""DataFrame of 1-minute binance klines BTC/USDT futures data from 2020-01-01 00:00:00 to the present."""
 
-ETHUSDT = _read_file("ETHUSDT.csv")
-"""DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+BTCUSDT_15m = _read_file("BTCUSDT-15m.csv")
+"""DataFrame of 15-minute binance klines BTC/USDT futures data from 2020-01-01 00:00:00 to the present."""
 
-ETHUSDT_1MIN = _read_file("ETHUSDT-1m.csv")
-"""DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+ETHUSDT_1m = _read_file("ETHUSDT-1m.csv")
+"""DataFrame of 1-minute binance klines ETH/USDT futures data from 2020-01-01 00:00:00 to the present."""
 
-SOLUSDT = _read_file("SOLUSDT.csv")
-"""DataFrame of hourly spot market binance BTC/USDT data from 2017-08-17 13:00:00 to 2021-08-01 09:00:00."""
+ETHUSDT_15m = _read_file("ETHUSDT-15m.csv")
+"""DataFrame of 15-minute binance klines ETH/USDT futures data from 2020-01-01 00:00:00 to the present."""
+
+SOLUSDT_1m = _read_file("SOLUSDT-1m.csv")
+"""DataFrame of 1-minute binance klines SOL/USDT futures data from 2020-09-14 07:00:00 to the present."""
+
+SOLUSDT_15m = _read_file("SOLUSDT-15m.csv")
+"""DataFrame of 15-minute binance klines SOL/USDT futures data from 2020-09-14 07:00:00 to the present."""
 
 
 def SMA(arr: pd.Series, n: int) -> pd.Series:
@@ -59,14 +65,8 @@ def MIN(arr: pd.Series, n: int) -> pd.Series:
 
 
 def IS_LOCAL_MAX(arr: pd.Series, n: int) -> pd.Series:
-    return (
-        pd.Series(arr).rooling(2 * n + 1).max().shift(-n)
-        == pd.Series(arr).rolling(1).max()
-    )
+    return pd.Series(arr).rooling(2 * n + 1).max().shift(-n) == pd.Series(arr).rolling(1).max()
 
 
 def IS_LOCAL_MIN(arr: pd.Series, n: int) -> pd.Series:
-    return (
-        pd.Series(arr).rooling(2 * n + 1).min().shift(-n)
-        == pd.Series(arr).rolling(1).min()
-    )
+    return pd.Series(arr).rooling(2 * n + 1).min().shift(-n) == pd.Series(arr).rolling(1).min()
