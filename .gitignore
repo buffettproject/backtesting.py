@@ -27,3 +27,6 @@ backtesting/test/ETHUSDT-*.csv
 backtesting/test/SOLUSDT-*.csv
 
 **/.DS_Store
+
+# Distribution
+build/
