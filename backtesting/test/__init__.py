@@ -19,24 +19,6 @@ GOOG = _read_file("GOOG.csv")
 EURUSD = _read_file("EURUSD.csv")
 """DataFrame of hourly EUR/USD forex data from April 2017 to February 2018."""
 
-BTCUSDT_1m = _read_file("BTCUSDT-1m.csv")
-"""DataFrame of 1-minute binance klines BTC/USDT futures data from 2020-01-01 00:00:00 to the present."""
-
-BTCUSDT_15m = _read_file("BTCUSDT-15m.csv")
-"""DataFrame of 15-minute binance klines BTC/USDT futures data from 2020-01-01 00:00:00 to the present."""
-
-ETHUSDT_1m = _read_file("ETHUSDT-1m.csv")
-"""DataFrame of 1-minute binance klines ETH/USDT futures data from 2020-01-01 00:00:00 to the present."""
-
-ETHUSDT_15m = _read_file("ETHUSDT-15m.csv")
-"""DataFrame of 15-minute binance klines ETH/USDT futures data from 2020-01-01 00:00:00 to the present."""
-
-SOLUSDT_1m = _read_file("SOLUSDT-1m.csv")
-"""DataFrame of 1-minute binance klines SOL/USDT futures data from 2020-09-14 07:00:00 to the present."""
-
-SOLUSDT_15m = _read_file("SOLUSDT-15m.csv")
-"""DataFrame of 15-minute binance klines SOL/USDT futures data from 2020-09-14 07:00:00 to the present."""
-
 
 def SMA(arr: pd.Series, n: int) -> pd.Series:
     """
