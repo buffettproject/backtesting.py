@@ -16,10 +16,11 @@ from __future__ import annotations
 import multiprocessing as mp
 import warnings
 from collections import OrderedDict
+from collections.abc import Generator, Sequence
 from inspect import currentframe
 from itertools import chain, compress, count
 from numbers import Number
-from typing import Callable, Generator, Optional, Sequence, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -32,31 +33,35 @@ from .backtesting import Backtest, Strategy
 __pdoc__ = {}
 
 
-OHLCV_AGG = OrderedDict((
-    ('Open', 'first'),
-    ('High', 'max'),
-    ('Low', 'min'),
-    ('Close', 'last'),
-    ('Volume', 'sum'),
-))
+OHLCV_AGG = OrderedDict(
+    (
+        ("Open", "first"),
+        ("High", "max"),
+        ("Low", "min"),
+        ("Close", "last"),
+        ("Volume", "sum"),
+    )
+)
 """Dictionary of rules for aggregating resampled OHLCV data frames,
 e.g.
 
     df.resample('4H', label='right').agg(OHLCV_AGG).dropna()
 """
 
-TRADES_AGG = OrderedDict((
-    ('Size', 'sum'),
-    ('EntryBar', 'first'),
-    ('ExitBar', 'last'),
-    ('EntryPrice', 'mean'),
-    ('ExitPrice', 'mean'),
-    ('PnL', 'sum'),
-    ('ReturnPct', 'mean'),
-    ('EntryTime', 'first'),
-    ('ExitTime', 'last'),
-    ('Duration', 'sum'),
-))
+TRADES_AGG = OrderedDict(
+    (
+        ("Size", "sum"),
+        ("EntryBar", "first"),
+        ("ExitBar", "last"),
+        ("EntryPrice", "mean"),
+        ("ExitPrice", "mean"),
+        ("PnL", "sum"),
+        ("ReturnPct", "mean"),
+        ("EntryTime", "first"),
+        ("ExitTime", "last"),
+        ("Duration", "sum"),
+    )
+)
 """Dictionary of rules for aggregating resampled trades data,
 e.g.
 
@@ -65,9 +70,9 @@ e.g.
 """
 
 _EQUITY_AGG = {
-    'Equity': 'last',
-    'DrawdownPct': 'max',
-    'DrawdownDuration': 'max',
+    "Equity": "last",
+    "DrawdownPct": "max",
+    "DrawdownDuration": "max",
 }
 
 
@@ -103,26 +108,34 @@ def crossover(series1: Sequence, series2: Sequence) -> bool:
         True
     """
     series1 = (
-        series1.values if isinstance(series1, pd.Series) else
-        (series1, series1) if isinstance(series1, Number) else
-        series1)
+        series1.values
+        if isinstance(series1, pd.Series)
+        else (series1, series1)
+        if isinstance(series1, Number)
+        else series1
+    )
     series2 = (
-        series2.values if isinstance(series2, pd.Series) else
-        (series2, series2) if isinstance(series2, Number) else
-        series2)
+        series2.values
+        if isinstance(series2, pd.Series)
+        else (series2, series2)
+        if isinstance(series2, Number)
+        else series2
+    )
     try:
         return series1[-2] < series2[-2] and series1[-1] > series2[-1]  # type: ignore
     except IndexError:
         return False
 
 
-def plot_heatmaps(heatmap: pd.Series,
-                  agg: Union[str, Callable] = 'max',
-                  *,
-                  ncols: int = 3,
-                  plot_width: int = 1200,
-                  filename: str = '',
-                  open_browser: bool = True):
+def plot_heatmaps(
+    heatmap: pd.Series,
+    agg: Union[str, Callable] = "max",
+    *,
+    ncols: int = 3,
+    plot_width: int = 1200,
+    filename: str = "",
+    open_browser: bool = True,
+):
     """
     Plots a grid of heatmaps, one for every pair of parameters in `heatmap`.
     See example in [the tutorial].
@@ -173,11 +186,12 @@ def quantile(series: Sequence, quantile: Union[None, float] = None):
 
 
 def compute_stats(
-        *,
-        stats: pd.Series,
-        data: pd.DataFrame,
-        trades: pd.DataFrame = None,
-        risk_free_rate: float = 0.) -> pd.Series:
+    *,
+    stats: pd.Series,
+    data: pd.DataFrame,
+    trades: pd.DataFrame = None,
+    risk_free_rate: float = 0.0,
+) -> pd.Series:
     """
     (Re-)compute strategy performance metrics.
 
@@ -200,17 +214,24 @@ def compute_stats(
         equity = equity.copy()
         equity[:] = stats._equity_curve.Equity.iloc[0]
         for t in trades.itertuples(index=False):
-            equity.iloc[t.EntryBar:] += t.PnL
-    return _compute_stats(trades=trades, equity=equity.values, ohlc_data=data,
-                          risk_free_rate=risk_free_rate, strategy_instance=stats._strategy)
+            equity.iloc[t.EntryBar :] += t.PnL
+    return _compute_stats(
+        trades=trades,
+        equity=equity.values,
+        ohlc_data=data,
+        risk_free_rate=risk_free_rate,
+        strategy_instance=stats._strategy,
+    )
 
 
-def resample_apply(rule: str,
-                   func: Optional[Callable[..., Sequence]],
-                   series: Union[pd.Series, pd.DataFrame, _Array],
-                   *args,
-                   agg: Optional[Union[str, dict]] = None,
-                   **kwargs):
+def resample_apply(
+    rule: str,
+    func: Optional[Callable[..., Sequence]],
+    series: Union[pd.Series, pd.DataFrame, _Array],
+    *args,
+    agg: Optional[Union[str, dict]] = None,
+    **kwargs,
+):
     """
     Apply `func` (such as an indicator) to `series`, resampled to
     a time frame specified by `rule`. When called from inside
@@ -283,24 +304,26 @@ http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
 
     """
     if func is None:
+
         def func(x, *_, **__):
             return x
-    assert callable(func), 'resample_apply(func=) must be callable'
+
+    assert callable(func), "resample_apply(func=) must be callable"
 
     if not isinstance(series, (pd.Series, pd.DataFrame)):
-        assert isinstance(series, _Array), \
-            'resample_apply(series=) must be `pd.Series`, `pd.DataFrame`, ' \
-            'or a `Strategy.data.*` array'
+        assert isinstance(series, _Array), (
+            "resample_apply(series=) must be `pd.Series`, `pd.DataFrame`, "
+            "or a `Strategy.data.*` array"
+        )
         series = series.s
 
     if agg is None:
-        agg = OHLCV_AGG.get(getattr(series, 'name', ''), 'last')
+        agg = OHLCV_AGG.get(getattr(series, "name", ""), "last")
         if isinstance(series, pd.DataFrame):
-            agg = {column: OHLCV_AGG.get(column, 'last')
-                   for column in series.columns}
+            agg = {column: OHLCV_AGG.get(column, "last") for column in series.columns}
 
-    resampled = series.resample(rule, label='right').agg(agg).dropna()
-    resampled.name = _as_str(series) + '[' + rule + ']'
+    resampled = series.resample(rule, label="right").agg(agg).dropna()
+    resampled.name = _as_str(series) + "[" + rule + "]"
 
     # Check first few stack frames if we are being called from
     # inside Strategy.init, and if so, extract Strategy.I wrapper.
@@ -308,11 +331,12 @@ http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     while frame and level <= 3:
         frame = frame.f_back
         level += 1
-        if isinstance(frame.f_locals.get('self'), Strategy):  # type: ignore
-            strategy_I = frame.f_locals['self'].I             # type: ignore
+        if isinstance(frame.f_locals.get("self"), Strategy):  # type: ignore
+            strategy_I = frame.f_locals["self"].I  # type: ignore
             break
     else:
-        def strategy_I(func, *args, **kwargs):  # noqa: F811
+
+        def strategy_I(func, *args, **kwargs):
             return func(*args, **kwargs)
 
     def wrap_func(resampled, *args, **kwargs):
@@ -326,8 +350,9 @@ http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
         # Resample back to data index
         if not isinstance(result.index, pd.DatetimeIndex):
             result.index = resampled.index
-        result = result.reindex(index=series.index.union(resampled.index),
-                                method='ffill').reindex(series.index)
+        result = result.reindex(index=series.index.union(resampled.index), method="ffill").reindex(
+            series.index
+        )
         return result
 
     wrap_func.__name__ = func.__name__
@@ -336,8 +361,9 @@ http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     return array
 
 
-def random_ohlc_data(example_data: pd.DataFrame, *,
-                     frac=1., random_state: Optional[int] = None) -> Generator[pd.DataFrame, None, None]:
+def random_ohlc_data(
+    example_data: pd.DataFrame, *, frac=1.0, random_state: Optional[int] = None
+) -> Generator[pd.DataFrame, None, None]:
     """
     OHLC data generator. The generated OHLC data has basic
     [descriptive statistics](https://en.wikipedia.org/wiki/Descriptive_statistics)
@@ -356,19 +382,21 @@ def random_ohlc_data(example_data: pd.DataFrame, *,
     >>> next(ohlc_generator)  # returns new random data
     ...
     """
+
     def shuffle(x):
         return x.sample(frac=frac, replace=frac > 1, random_state=random_state)
 
-    if len(example_data.columns.intersection({'Open', 'High', 'Low', 'Close'})) != 4:
-        raise ValueError("`data` must be a pandas.DataFrame with columns "
-                         "'Open', 'High', 'Low', 'Close'")
+    if len(example_data.columns.intersection({"Open", "High", "Low", "Close"})) != 4:
+        raise ValueError(
+            "`data` must be a pandas.DataFrame with columns 'Open', 'High', 'Low', 'Close'"
+        )
     while True:
         df = shuffle(example_data)
         df.index = example_data.index
         padding = df.Close - df.Open.shift(-1)
         gaps = shuffle(example_data.Open.shift(-1) - example_data.Close)
         deltas = (padding + gaps).shift(1).fillna(0).cumsum()
-        for key in ('Open', 'High', 'Low', 'Close'):
+        for key in ("Open", "High", "Low", "Close"):
             df[key] += deltas
         yield df
 
@@ -395,13 +423,17 @@ class SignalStrategy(Strategy):
     Remember to call `super().init()` and `super().next()` in your
     overridden methods.
     """
+
     __entry_signal = (0,)
     __exit_signal = (False,)
 
-    def set_signal(self, entry_size: Sequence[float],
-                   exit_portion: Optional[Sequence[float]] = None,
-                   *,
-                   plot: bool = True):
+    def set_signal(
+        self,
+        entry_size: Sequence[float],
+        exit_portion: Optional[Sequence[float]] = None,
+        *,
+        plot: bool = True,
+    ):
         """
         Set entry/exit signal vectors (arrays).
 
@@ -418,12 +450,22 @@ class SignalStrategy(Strategy):
         """
         self.__entry_signal = self.I(  # type: ignore
             lambda: pd.Series(entry_size, dtype=float).replace(0, np.nan),
-            name='entry size', plot=plot, overlay=False, scatter=True, color='black')
+            name="entry size",
+            plot=plot,
+            overlay=False,
+            scatter=True,
+            color="black",
+        )
 
         if exit_portion is not None:
             self.__exit_signal = self.I(  # type: ignore
                 lambda: pd.Series(exit_portion, dtype=float).replace(0, np.nan),
-                name='exit portion', plot=plot, overlay=False, scatter=True, color='black')
+                name="exit portion",
+                plot=plot,
+                overlay=False,
+                scatter=True,
+                color="black",
+            )
 
     def next(self):
         super().next()
@@ -457,7 +499,8 @@ class TrailingStrategy(Strategy):
     Remember to call `super().init()` and `super().next()` in your
     overridden methods.
     """
-    __n_atr = 6.
+
+    __n_atr = 6.0
     __atr = None
 
     def init(self):
@@ -481,7 +524,7 @@ class TrailingStrategy(Strategy):
         """
         self.__n_atr = n_atr
 
-    def set_trailing_pct(self, pct: float = .05):
+    def set_trailing_pct(self, pct: float = 0.05):
         """
         Set the future trailing stop-loss as some percent (`0 < pct < 1`)
         below the current price (default 5% below).
@@ -490,21 +533,23 @@ class TrailingStrategy(Strategy):
             Stop-loss set by `set_trailing_pct` is converted to units of ATR
             with `mean(Close * pct / atr)` and set with `set_trailing_sl`.
         """
-        assert 0 < pct < 1, 'Need pct= as rate, i.e. 5% == 0.05'
+        assert 0 < pct < 1, "Need pct= as rate, i.e. 5% == 0.05"
         pct_in_atr = np.mean(self.data.Close * pct / self.__atr)  # type: ignore
         self.set_trailing_sl(pct_in_atr)
 
     def next(self):
         super().next()
         # Can't use index=-1 because self.__atr is not an Indicator type
-        index = len(self.data)-1
+        index = len(self.data) - 1
         for trade in self.trades:
             if trade.is_long:
-                trade.sl = max(trade.sl or -np.inf,
-                               self.data.Close[index] - self.__atr[index] * self.__n_atr)
+                trade.sl = max(
+                    trade.sl or -np.inf, self.data.Close[index] - self.__atr[index] * self.__n_atr
+                )
             else:
-                trade.sl = min(trade.sl or np.inf,
-                               self.data.Close[index] + self.__atr[index] * self.__n_atr)
+                trade.sl = min(
+                    trade.sl or np.inf, self.data.Close[index] + self.__atr[index] * self.__n_atr
+                )
 
 
 class FractionalBacktest(Backtest):
@@ -523,27 +568,26 @@ class FractionalBacktest(Backtest):
 
     [satoshi]: https://en.wikipedia.org/wiki/Bitcoin#Units_and_divisibility
     """
-    def __init__(self,
-                 data,
-                 *args,
-                 fractional_unit=1 / 100e6,
-                 **kwargs):
-        if 'satoshi' in kwargs:
+
+    def __init__(self, data, *args, fractional_unit=1 / 100e6, **kwargs):
+        if "satoshi" in kwargs:
             warnings.warn(
-                'Parameter `FractionalBacktest(..., satoshi=)` is deprecated. '
-                'Use `FractionalBacktest(..., fractional_unit=)`.',
-                category=DeprecationWarning, stacklevel=2)
-            fractional_unit = 1 / kwargs.pop('satoshi')
+                "Parameter `FractionalBacktest(..., satoshi=)` is deprecated. "
+                "Use `FractionalBacktest(..., fractional_unit=)`.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            fractional_unit = 1 / kwargs.pop("satoshi")
         data = data.copy()
-        data[['Open', 'High', 'Low', 'Close']] *= fractional_unit
-        data['Volume'] /= fractional_unit
+        data[["Open", "High", "Low", "Close"]] *= fractional_unit
+        data["Volume"] /= fractional_unit
         super().__init__(data, *args, **kwargs)
 
 
 # Prevent pdoc3 documenting __init__ signature of Strategy subclasses
 for cls in list(globals().values()):
     if isinstance(cls, type) and issubclass(cls, Strategy):
-        __pdoc__[f'{cls.__name__}.__init__'] = False
+        __pdoc__[f"{cls.__name__}.__init__"] = False
 
 
 class MultiBacktest:
@@ -559,6 +603,7 @@ class MultiBacktest:
         stats_per_ticker: pd.DataFrame = btm.run(fast=10, slow=20)
         heatmap_per_ticker: pd.DataFrame = btm.optimize(...)
     """
+
     def __init__(self, df_list, strategy_cls, **kwargs):
         self._dfs = df_list
         self._strategy = strategy_cls
@@ -569,13 +614,16 @@ class MultiBacktest:
         Wraps `backtesting.backtesting.Backtest.run`. Returns `pd.DataFrame` with
         currency indexes in columns.
         """
-        with mp.Pool() as pool, \
-                SharedMemoryManager() as smm:
+        with mp.Pool() as pool, SharedMemoryManager() as smm:
             shm = [smm.df2shm(df) for df in self._dfs]
             results = _tqdm(
-                pool.imap(self._mp_task_run,
-                          ((df_batch, self._strategy, self._bt_kwargs, kwargs)
-                           for df_batch in _batch(shm))),
+                pool.imap(
+                    self._mp_task_run,
+                    (
+                        (df_batch, self._strategy, self._bt_kwargs, kwargs)
+                        for df_batch in _batch(shm)
+                    ),
+                ),
                 total=len(shm),
                 desc=self.__class__.__name__,
             )
@@ -587,9 +635,10 @@ class MultiBacktest:
         data_shm, strategy, bt_kwargs, run_kwargs = args
         dfs, shms = zip(*(SharedMemoryManager.shm2df(i) for i in data_shm))
         try:
-            return [stats.filter(regex='^[^_]') if stats['# Trades'] else None
-                    for stats in (Backtest(df, strategy, **bt_kwargs).run(**run_kwargs)
-                                  for df in dfs)]
+            return [
+                stats.filter(regex="^[^_]") if stats["# Trades"] else None
+                for stats in (Backtest(df, strategy, **bt_kwargs).run(**run_kwargs) for df in dfs)
+            ]
         finally:
             for shmem in chain(*shms):
                 shmem.close()
@@ -608,7 +657,8 @@ class MultiBacktest:
         for df in _tqdm(self._dfs, desc=self.__class__.__name__):
             bt = Backtest(df, self._strategy, **self._bt_kwargs)
             _best_stats, heatmap = bt.optimize(  # type: ignore
-                return_heatmap=True, return_optimization=False, **kwargs)
+                return_heatmap=True, return_optimization=False, **kwargs
+            )
             heatmaps.append(heatmap)
         heatmap = pd.DataFrame(dict(zip(count(), heatmaps)))
         return heatmap
@@ -616,10 +666,16 @@ class MultiBacktest:
 
 # NOTE: Don't put anything below this __all__ list
 
-__all__ = [getattr(v, '__name__', k)
-           for k, v in globals().items()                        # export
-           if ((callable(v) and v.__module__ == __name__ or     # callables from this module
-                k.isupper()) and                                # or CONSTANTS
-               not getattr(v, '__name__', k).startswith('_'))]  # neither marked internal
+__all__ = [
+    getattr(v, "__name__", k)
+    for k, v in globals().items()  # export
+    if (
+        (
+            (callable(v) and v.__module__ == __name__)  # callables from this module
+            or k.isupper()
+        )  # or CONSTANTS
+        and not getattr(v, "__name__", k).startswith("_")
+    )
+]  # neither marked internal
 
 # NOTE: Don't put anything below here. See above.
